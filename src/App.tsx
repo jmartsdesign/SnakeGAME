@@ -52,6 +52,7 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState(400);
+  const [canvasReady, setCanvasReady] = useState(false);
   const [snake, setSnake] = useState<Position[]>(getInitialSnake());
   const [food, setFood] = useState<Position>({ x: 15, y: 10 });
   const [direction, setDirection] = useState<Direction>('RIGHT');
@@ -98,24 +99,18 @@ export default function App() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const cellSize = canvasSize / GRID_SIZE;
+    // Use actual canvas dimensions
+    const width = canvas.width;
+    const height = canvas.height;
+    const cellSize = width / GRID_SIZE;
 
-    // Clear canvas with light background
-    ctx.fillStyle = '#e8ecf1';
-    ctx.fillRect(0, 0, canvasSize, canvasSize);
-
-    // Draw grid
-    ctx.strokeStyle = '#c8d0da';
-    ctx.lineWidth = 0.8;
-    for (let i = 0; i <= GRID_SIZE; i++) {
-      ctx.beginPath();
-      ctx.moveTo(i * cellSize, 0);
-      ctx.lineTo(i * cellSize, canvasSize);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(0, i * cellSize);
-      ctx.lineTo(canvasSize, i * cellSize);
-      ctx.stroke();
+    // Clear canvas with checkerboard pattern background
+    for (let row = 0; row < GRID_SIZE; row++) {
+      for (let col = 0; col < GRID_SIZE; col++) {
+        const isEven = (row + col) % 2 === 0;
+        ctx.fillStyle = isEven ? '#d4dbe4' : '#c5ced9';
+        ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+      }
     }
 
     // Draw food with glow effect
@@ -143,10 +138,7 @@ export default function App() {
     currentSnake.forEach((segment, index) => {
       const x = segment.x * cellSize;
       const y = segment.y * cellSize;
-      const padding = 1;
-      const radius = index === 0 ? cellSize * 0.15 : cellSize * 0.1;
-
-      // Snake body gradient
+      const padding = 1.5;
       const isHead = index === 0;
       const alpha = 1 - (index / currentSnake.length) * 0.3;
 
@@ -156,22 +148,9 @@ export default function App() {
         ctx.shadowBlur = 6;
       }
 
-      // Rounded rectangle for each segment
-      ctx.beginPath();
-      ctx.roundRect(
-        x + padding,
-        y + padding,
-        cellSize - padding * 2,
-        cellSize - padding * 2,
-        radius
-      );
-
-      if (isHead) {
-        ctx.fillStyle = '#16a34a';
-      } else {
-        ctx.fillStyle = `rgba(34, 197, 94, ${alpha})`;
-      }
-      ctx.fill();
+      // Rectangle for each segment
+      ctx.fillStyle = isHead ? '#16a34a' : `rgba(34, 197, 94, ${alpha})`;
+      ctx.fillRect(x + padding, y + padding, cellSize - padding * 2, cellSize - padding * 2);
       ctx.restore();
 
       // Draw eyes on head
@@ -226,7 +205,7 @@ export default function App() {
     // Draw border around the board
     ctx.strokeStyle = '#475569';
     ctx.lineWidth = 3;
-    ctx.strokeRect(1.5, 1.5, canvasSize - 3, canvasSize - 3);
+    ctx.strokeRect(1.5, 1.5, width - 3, height - 3);
   }, [canvasSize]);
 
   // Game loop
@@ -296,10 +275,15 @@ export default function App() {
     }
   }, [gameState, difficulty, gameLoop]);
 
-  // Draw on state changes
+  // Draw on state changes, canvas ready, and size changes
   useEffect(() => {
-    draw();
-  }, [snake, food, draw]);
+    if (canvasReady && canvasRef.current) {
+      const timer = setTimeout(() => {
+        requestAnimationFrame(() => draw());
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [snake, food, draw, gameState, canvasReady, canvasSize]);
 
   // Change direction
   const changeDirection = useCallback((newDir: Direction) => {
@@ -474,7 +458,10 @@ export default function App() {
       {/* Game Board */}
       <div ref={containerRef} className="relative animate-fade-in game-board-wrapper">
         <canvas
-          ref={canvasRef}
+          ref={(el) => {
+            (canvasRef as React.MutableRefObject<HTMLCanvasElement | null>).current = el;
+            if (el) setCanvasReady(true);
+          }}
           width={canvasSize}
           height={canvasSize}
           className="game-canvas"
