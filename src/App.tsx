@@ -101,11 +101,11 @@ export default function App() {
     const cellSize = canvasSize / GRID_SIZE;
 
     // Clear canvas with light background
-    ctx.fillStyle = '#f1f5f9';
+    ctx.fillStyle = '#e8ecf1';
     ctx.fillRect(0, 0, canvasSize, canvasSize);
 
     // Draw grid
-    ctx.strokeStyle = '#cbd5e1';
+    ctx.strokeStyle = '#c8d0da';
     ctx.lineWidth = 0.8;
     for (let i = 0; i <= GRID_SIZE; i++) {
       ctx.beginPath();
@@ -222,6 +222,11 @@ export default function App() {
         ctx.fill();
       }
     });
+
+    // Draw border around the board
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(1.5, 1.5, canvasSize - 3, canvasSize - 3);
   }, [canvasSize]);
 
   // Game loop
@@ -467,7 +472,7 @@ export default function App() {
       </div>
 
       {/* Game Board */}
-      <div ref={containerRef} className="relative animate-fade-in">
+      <div ref={containerRef} className="relative animate-fade-in game-board-wrapper">
         <canvas
           ref={canvasRef}
           width={canvasSize}
@@ -478,7 +483,7 @@ export default function App() {
 
         {/* Overlay States */}
         {gameState === 'idle' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl animate-fade-in">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm rounded-2xl animate-fade-in">
             <div className="text-5xl mb-3 animate-bounce-in">🐍</div>
             <h2 className="text-xl font-bold text-slate-800 mb-2">Jogo da Cobra</h2>
             <p className="text-sm text-slate-500 mb-4">Use as setas ou deslize para jogar</p>
@@ -493,7 +498,7 @@ export default function App() {
         )}
 
         {gameState === 'paused' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl animate-fade-in">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm rounded-2xl animate-fade-in">
             <div className="text-4xl mb-3">⏸️</div>
             <h2 className="text-xl font-bold text-slate-800 mb-2">Pausado</h2>
             <button
@@ -507,7 +512,7 @@ export default function App() {
         )}
 
         {gameState === 'gameover' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm rounded-xl animate-fade-in">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm rounded-2xl animate-fade-in">
             <div className="text-4xl mb-2 animate-bounce-in">💀</div>
             <h2 className="text-xl font-bold text-slate-800 mb-1">Fim de Jogo!</h2>
             <p className="text-3xl font-bold text-emerald-600 mb-1">{score} pts</p>
