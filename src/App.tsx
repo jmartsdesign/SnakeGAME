@@ -101,12 +101,12 @@ export default function App() {
     const cellSize = canvasSize / GRID_SIZE;
 
     // Clear canvas with light background
-    ctx.fillStyle = '#f8fafc';
+    ctx.fillStyle = '#f1f5f9';
     ctx.fillRect(0, 0, canvasSize, canvasSize);
 
     // Draw grid
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 0.8;
     for (let i = 0; i <= GRID_SIZE; i++) {
       ctx.beginPath();
       ctx.moveTo(i * cellSize, 0);
@@ -472,7 +472,7 @@ export default function App() {
           ref={canvasRef}
           width={canvasSize}
           height={canvasSize}
-          className="game-canvas bg-slate-50"
+          className="game-canvas"
           style={{ width: canvasSize, height: canvasSize }}
         />
 
